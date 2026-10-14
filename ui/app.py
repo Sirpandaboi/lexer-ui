@@ -633,7 +633,6 @@ PAGE = r"""<!doctype html>
   function displayLexeme(tok) {
     if (tok.type === "EOF") { return "EOF"; }
     return String(tok.value)
-      .replace(/\\/g, "\\\\")
       .replace(/\n/g, "\\n")
       .replace(/\r/g, "\\r")
       .replace(/\t/g, "\\t");
