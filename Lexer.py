@@ -988,7 +988,7 @@ class Lexer:
             elif state == 107:
                 if ch is None or ch in WHITESPACE:
                     state = 108
-                    return Token("incription", lexeme, self.line, start_col)
+                    return Token("inscription", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 274
                 else:
@@ -1106,7 +1106,7 @@ class Lexer:
                 else:
                     state = 258
             elif state == 126:
-                if ch is None or ch in TERMINATOR:
+                if ch is None or ch in TRANSFER_DEL:
                     state = 127
                     return Token("null", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
