@@ -37,16 +37,13 @@ CLOSE_CURLY = {"}"}
 OPEN_BRACKET = {"["}
 CLOSE_BRACKET = {"]"}
 OPEN_QUOTE = {'"'}
+HASHTAG = {"#"}
 
 # GENERAL DELIMITERS
 SPACE_DEL = WHITESPACE | NEWLINE
-LIT_DEL = (
-    WHITESPACE | TERMINATOR | COMMA | CLOSE_PAREN | CLOSE_CURLY | AND_OR_OP | EQUAL_OP
-)
 PAREN_DEL = WHITESPACE | OPEN_PAREN
-CURLY_DEL = WHITESPACE | OPEN_CURLY
+CURLY_DEL = OPEN_CURLY | SPACE_DEL
 TRANSFER_DEL = WHITESPACE | TERMINATOR
-CONJURE_DEL = LETTERS | WHITESPACE
 
 # GROUPING DELIMITERS
 OPEN_PAREN_DEL = (
@@ -58,6 +55,7 @@ CLOSE_PAREN_DEL = (
     | MATH_OP
     | REL_OP
     | AND_OR_OP
+    | HASHTAG
     | CLOSE_PAREN
     | OPEN_CURLY
     | CLOSE_CURLY
@@ -65,9 +63,9 @@ CLOSE_PAREN_DEL = (
     | SPACE_DEL
 )
 OPEN_CURLY_DEL = (
-    LETTERS | NUMBERS | NEG_OP | OPEN_CURLY | CLOSE_CURLY | OPEN_QUOTE | SPACE_DEL
+    LETTERS | NUMBERS | NEG_OP | HASHTAG | OPEN_CURLY | CLOSE_CURLY | OPEN_QUOTE | SPACE_DEL
 )
-CLOSE_CURLY_DEL = LETTERS | TERMINATOR | COMMA | CLOSE_CURLY | SPACE_DEL
+CLOSE_CURLY_DEL = LETTERS | TERMINATOR | COMMA | HASHTAG | CLOSE_CURLY | SPACE_DEL
 OPEN_BRACKET_DEL = LETTERS | NUMBERS | PAREN_DEL
 CLOSE_BRACKET_DEL = (
     TERMINATOR
@@ -97,12 +95,9 @@ ASSIGN_DEL = LETTERS | NUMBERS | WHITESPACE | NEG_OP | OPEN_PAREN
 BASE_ASSIGN_DEL = NOT_OP | OPEN_CURLY | OPEN_QUOTE | ASSIGN_DEL
 
 # PUNCTUATION DELIMITERS
-TERMINATOR_DEL = CLOSE_CURLY | SPACE_DEL
+TERMINATOR_DEL = HASHTAG | CLOSE_CURLY | SPACE_DEL
 COMMA_DEL = (
-    LETTERS | NUMBERS | NEG_OP | OPEN_PAREN | OPEN_CURLY | OPEN_QUOTE | SPACE_DEL
-)
-CLOSE_QUOTE_DEL = (
-    WHITESPACE | TERMINATOR | COMMA | CLOSE_PAREN | OPEN_CURLY | CLOSE_CURLY
+    LETTERS | NUMBERS | NEG_OP | HASHTAG |OPEN_PAREN | OPEN_CURLY | OPEN_QUOTE | SPACE_DEL
 )
 
 # IDENTIFIER & LITERAL DELIMITERS
@@ -146,8 +141,7 @@ ESSENCE_LIT_DEL = (
     | CLOSE_CURLY
     | SPACE_DEL
 )
-GLYPH_LIT_DEL = TERMINATOR | COMMA | CLOSE_PAREN | OPEN_CURLY | CLOSE_CURLY | SPACE_DEL
-INSCRIPTION_LIT_DEL = TERMINATOR | COMMA | CLOSE_PAREN | CLOSE_CURLY | SPACE_DEL
+INSCRIPTION_LIT_DEL = TERMINATOR | COMMA | EQUAL_OP | NOT_OP | CLOSE_PAREN | OPEN_CURLY | CLOSE_CURLY | SPACE_DEL
 AURA_LIT_DEL = (
     TERMINATOR
     | COMMA
@@ -164,7 +158,6 @@ TOKEN_START = (
     LETTERS
     | NUMBERS
     | NEG_OP
-    | MATH_OP
     | REL_OP
     | AND_OR_OP
     | NOT_OP
@@ -337,7 +330,7 @@ class Lexer:
             elif state == 6:
                 if ch is None or ch in WHITESPACE:
                     state = 7
-                    return Token("RW_AETHER", lexeme, self.line, start_col)
+                    return Token("aether", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 264
                 else:
@@ -363,7 +356,7 @@ class Lexer:
             elif state == 10:
                 if ch is None or ch in WHITESPACE:
                     state = 11
-                    return Token("RW_AURA", lexeme, self.line, start_col)
+                    return Token("aura", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 260
                 else:
@@ -411,9 +404,9 @@ class Lexer:
                 else:
                     state = 264
             elif state == 18:
-                if ch is None or ch in LIT_DEL:
+                if ch is None or ch in AURA_LIT_DEL:
                     state = 19
-                    return Token("RW_BLESSED", lexeme, self.line, start_col)
+                    return Token("blessed", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 266
                 else:
@@ -462,7 +455,7 @@ class Lexer:
             elif state == 23:
                 if ch is None or ch in PAREN_DEL:
                     state = 24
-                    return Token("RW_CAST", lexeme, self.line, start_col)
+                    return Token("cast", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 260
                 else:
@@ -497,7 +490,7 @@ class Lexer:
             elif state == 28:
                 if ch is None or ch in PAREN_DEL:
                     state = 29
-                    return Token("RW_CHANT", lexeme, self.line, start_col)
+                    return Token("chant", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 262
                 else:
@@ -523,7 +516,7 @@ class Lexer:
             elif state == 32:
                 if ch is None or ch in PAREN_DEL:
                     state = 33
-                    return Token("RW_CHARGE", lexeme, self.line, start_col)
+                    return Token("charge", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 264
                 else:
@@ -561,7 +554,7 @@ class Lexer:
             elif state == 38:
                 if ch is None or ch in WHITESPACE:
                     state = 39
-                    return Token("RW_CIRCLE", lexeme, self.line, start_col)
+                    return Token("circle", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 264
                 else:
@@ -605,7 +598,7 @@ class Lexer:
             elif state == 45:
                 if ch is None or ch in CURLY_DEL:
                     state = 46
-                    return Token("RW_COUNTER", lexeme, self.line, start_col)
+                    return Token("counter", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 266
                 else:
@@ -661,7 +654,7 @@ class Lexer:
             elif state == 54:
                 if ch is None or ch in PAREN_DEL:
                     state = 55
-                    return Token("RW_CROSSROAD", lexeme, self.line, start_col)
+                    return Token("crossroad", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 270
                 else:
@@ -697,9 +690,9 @@ class Lexer:
                 else:
                     state = 262
             elif state == 60:
-                if ch is None or ch in LIT_DEL:
+                if ch is None or ch in AURA_LIT_DEL:
                     state = 61
-                    return Token("RW_CURSED", lexeme, self.line, start_col)
+                    return Token("cursed", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 264
                 else:
@@ -755,7 +748,7 @@ class Lexer:
             elif state == 69:
                 if ch is None or ch in WHITESPACE:
                     state = 70
-                    return Token("RW_DARKNESS", lexeme, self.line, start_col)
+                    return Token("darkness", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 268
                 else:
@@ -805,7 +798,7 @@ class Lexer:
             elif state == 77:
                 if ch is None or ch in WHITESPACE:
                     state = 78
-                    return Token("RW_ESSENCE", lexeme, self.line, start_col)
+                    return Token("essence", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 266
                 else:
@@ -861,7 +854,7 @@ class Lexer:
             elif state == 86:
                 if ch is None or ch in CURLY_DEL:
                     state = 87
-                    return Token("RW_FALLBACK", lexeme, self.line, start_col)
+                    return Token("fallback", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 268
                 else:
@@ -917,7 +910,7 @@ class Lexer:
             elif state == 95:
                 if ch is None or ch in PAREN_DEL:
                     state = 96
-                    return Token("RW_GRIMOIRE", lexeme, self.line, start_col)
+                    return Token("grimoire", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 268
                 else:
@@ -995,7 +988,7 @@ class Lexer:
             elif state == 107:
                 if ch is None or ch in WHITESPACE:
                     state = 108
-                    return Token("RW_INSCRIPTION", lexeme, self.line, start_col)
+                    return Token("incription", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 274
                 else:
@@ -1027,7 +1020,7 @@ class Lexer:
             elif state == 112:
                 if ch is None or ch in CURLY_DEL:
                     state = 113
-                    return Token("RW_INVOKE", lexeme, self.line, start_col)
+                    return Token("invoke", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 264
                 else:
@@ -1083,7 +1076,7 @@ class Lexer:
             elif state == 121:
                 if ch is None or ch in PAREN_DEL:
                     state = 122
-                    return Token("RW_MANIFEST", lexeme, self.line, start_col)
+                    return Token("manifest", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 268
                 else:
@@ -1113,9 +1106,9 @@ class Lexer:
                 else:
                     state = 258
             elif state == 126:
-                if ch is None or ch in LIT_DEL:
+                if ch is None or ch in TERMINATOR:
                     state = 127
-                    return Token("RW_NULL", lexeme, self.line, start_col)
+                    return Token("null", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 260
                 else:
@@ -1165,7 +1158,7 @@ class Lexer:
             elif state == 134:
                 if ch is None or ch in TRANSFER_DEL:
                     state = 135
-                    return Token("RW_PERSIST", lexeme, self.line, start_col)
+                    return Token("persist", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 266
                 else:
@@ -1202,7 +1195,7 @@ class Lexer:
             elif state == 139:
                 if ch is None or ch in WHITESPACE:
                     state = 140
-                    return Token("RW_RUNE", lexeme, self.line, start_col)
+                    return Token("rune", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 260
                 else:
@@ -1264,7 +1257,7 @@ class Lexer:
             elif state == 149:
                 if ch is None or ch in PAREN_DEL:
                     state = 150
-                    return Token("RW_REMANIFEST", lexeme, self.line, start_col)
+                    return Token("remanifest", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 272
                 else:
@@ -1322,7 +1315,7 @@ class Lexer:
             elif state == 156:
                 if ch is None or ch in PAREN_DEL:
                     state = 157
-                    return Token("RW_SCROLL", lexeme, self.line, start_col)
+                    return Token("scroll", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 264
                 else:
@@ -1360,7 +1353,7 @@ class Lexer:
             elif state == 162:
                 if ch is None or ch in WHITESPACE:
                     state = 163
-                    return Token("RW_SEALED", lexeme, self.line, start_col)
+                    return Token("sealed", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 264
                 else:
@@ -1404,7 +1397,7 @@ class Lexer:
             elif state == 169:
                 if ch is None or ch in TRANSFER_DEL:
                     state = 170
-                    return Token("RW_SHATTER", lexeme, self.line, start_col)
+                    return Token("shatter", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 266
                 else:
@@ -1436,7 +1429,7 @@ class Lexer:
             elif state == 174:
                 if ch is None or ch in WHITESPACE:
                     state = 175
-                    return Token("RW_SPELL", lexeme, self.line, start_col)
+                    return Token("spell", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 262
                 else:
@@ -1474,7 +1467,7 @@ class Lexer:
             elif state == 180:
                 if ch is None or ch in WHITESPACE:
                     state = 181
-                    return Token("RW_SUMMON", lexeme, self.line, start_col)
+                    return Token("summon", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 264
                 else:
@@ -1512,7 +1505,7 @@ class Lexer:
             elif state == 186:
                 if ch is None or ch in TRANSFER_DEL:
                     state = 187
-                    return Token("RW_YIELD", lexeme, self.line, start_col)
+                    return Token("yield", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     state = 262
                 else:
@@ -1526,7 +1519,7 @@ class Lexer:
             elif 254 <= state <= 284 and state % 2 == 0:
                 if ch in ID_DEL or ch is None:
                     state = state + 1
-                    return Token("IDENTIFIER", lexeme, self.line, start_col)
+                    return Token("id", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
                     if state == 284:
                         raise LexerError(
@@ -1627,7 +1620,7 @@ class Lexer:
             elif state == 188:
                 if ch is None or ch in CLOSE_PAREN_DEL:
                     state = 189
-                    return Token("RS_CLOSE_PARENTHESIS", lexeme, self.line, start_col)
+                    return Token(")", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after ')'", self.line, self.col
                 )
@@ -1636,7 +1629,7 @@ class Lexer:
             elif state == 190:
                 if ch in OPEN_PAREN_DEL:
                     state = 191
-                    return Token("RS_OPEN_PARENTHESIS", lexeme, self.line, start_col)
+                    return Token("(", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '('", self.line, self.col
                 )
@@ -1645,7 +1638,7 @@ class Lexer:
             elif state == 192:
                 if ch is None or ch in CLOSE_CURLY_DEL:
                     state = 193
-                    return Token("RS_CLOSE_CURLY_BRACE", lexeme, self.line, start_col)
+                    return Token("}", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '}}'", self.line, self.col
                 )
@@ -1654,7 +1647,7 @@ class Lexer:
             elif state == 194:
                 if ch in OPEN_CURLY_DEL:
                     state = 195
-                    return Token("RS_OPEN_CURLY_BRACE", lexeme, self.line, start_col)
+                    return Token("{", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '{{'", self.line, self.col
                 )
@@ -1663,7 +1656,7 @@ class Lexer:
             elif state == 196:
                 if ch in OPEN_BRACKET_DEL:
                     state = 197
-                    return Token("RS_OPEN_BRACKET", lexeme, self.line, start_col)
+                    return Token("[", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '['", self.line, self.col
                 )
@@ -1672,7 +1665,7 @@ class Lexer:
             elif state == 198:
                 if ch is None or ch in CLOSE_BRACKET_DEL:
                     state = 199
-                    return Token("RS_CLOSE_BRACKET", lexeme, self.line, start_col)
+                    return Token("]", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after ']'", self.line, self.col
                 )
@@ -1681,7 +1674,7 @@ class Lexer:
             elif state == 200:
                 if ch in NEG_DEL:
                     state = 201
-                    return Token("RS_NEGATIVE", lexeme, self.line, start_col)
+                    return Token("~", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '~'", self.line, self.col
                 )
@@ -1696,7 +1689,7 @@ class Lexer:
                     state = 206
                 elif ch in MATH_DEL:
                     state = 203
-                    return Token("RS_ADD", lexeme, self.line, start_col)
+                    return Token("+", lexeme, self.line, start_col)
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after '+'", self.line, self.col
@@ -1706,7 +1699,7 @@ class Lexer:
             elif state == 204:
                 if ch is None or ch in CREMENT_DEL:
                     state = 205
-                    return Token("RS_INCREMENT", lexeme, self.line, start_col)
+                    return Token("++", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '++'", self.line, self.col
                 )
@@ -1715,7 +1708,7 @@ class Lexer:
             elif state == 206:
                 if ch in ASSIGN_DEL:
                     state = 207
-                    return Token("RS_ADD_ASSIGN", lexeme, self.line, start_col)
+                    return Token("+=", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '+='", self.line, self.col
                 )
@@ -1730,7 +1723,7 @@ class Lexer:
                     state = 212
                 elif ch in MATH_DEL:
                     state = 209
-                    return Token("RS_MINUS", lexeme, self.line, start_col)
+                    return Token("-", lexeme, self.line, start_col)
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after '-'", self.line, self.col
@@ -1740,7 +1733,7 @@ class Lexer:
             elif state == 210:
                 if ch is None or ch in CREMENT_DEL:
                     state = 211
-                    return Token("RS_DECREMENT", lexeme, self.line, start_col)
+                    return Token("--", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '--'", self.line, self.col
                 )
@@ -1749,7 +1742,7 @@ class Lexer:
             elif state == 212:
                 if ch in ASSIGN_DEL:
                     state = 213
-                    return Token("RS_SUB_ASSIGN", lexeme, self.line, start_col)
+                    return Token("-=", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '-='", self.line, self.col
                 )
@@ -1761,7 +1754,7 @@ class Lexer:
                     state = 216
                 elif ch in MATH_DEL:
                     state = 215
-                    return Token("RS_MULTIPLY", lexeme, self.line, start_col)
+                    return Token("*", lexeme, self.line, start_col)
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after '*'", self.line, self.col
@@ -1771,7 +1764,7 @@ class Lexer:
             elif state == 216:
                 if ch in ASSIGN_DEL:
                     state = 217
-                    return Token("RS_MULTIPLY_ASSIGN", lexeme, self.line, start_col)
+                    return Token("*=", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '*='", self.line, self.col
                 )
@@ -1783,7 +1776,7 @@ class Lexer:
                     state = 220
                 elif ch in MATH_DEL:
                     state = 223
-                    return Token("RS_DIVIDE", lexeme, self.line, start_col)
+                    return Token("/", lexeme, self.line, start_col)
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after '/'", self.line, self.col
@@ -1793,7 +1786,7 @@ class Lexer:
             elif state == 220:
                 if ch in ASSIGN_DEL:
                     state = 221
-                    return Token("RS_DIVIDE_ASSIGN", lexeme, self.line, start_col)
+                    return Token("/=", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '/='", self.line, self.col
                 )
@@ -1805,7 +1798,7 @@ class Lexer:
                     state = 224
                 elif ch in MATH_DEL:
                     state = 223
-                    return Token("RS_MODULO", lexeme, self.line, start_col)
+                    return Token("%", lexeme, self.line, start_col)
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after '%'", self.line, self.col
@@ -1815,7 +1808,7 @@ class Lexer:
             elif state == 224:
                 if ch in ASSIGN_DEL:
                     state = 225
-                    return Token("RS_MODULO_ASSIGN", lexeme, self.line, start_col)
+                    return Token("%=", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '%='", self.line, self.col
                 )
@@ -1827,7 +1820,7 @@ class Lexer:
                     state = 228
                 elif ch in REL_DEL:
                     state = 227
-                    return Token("RS_GREATER_THAN", lexeme, self.line, start_col)
+                    return Token(">", lexeme, self.line, start_col)
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after '>'", self.line, self.col
@@ -1837,7 +1830,7 @@ class Lexer:
             elif state == 228:
                 if ch in REL_DEL:
                     state = 229
-                    return Token("RS_GREATER_THAN_EQUAL", lexeme, self.line, start_col)
+                    return Token(">=", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '>='", self.line, self.col
                 )
@@ -1849,7 +1842,7 @@ class Lexer:
                     state = 232
                 elif ch in REL_DEL:
                     state = 231
-                    return Token("RS_LESS_THAN", lexeme, self.line, start_col)
+                    return Token("<", lexeme, self.line, start_col)
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after '<'", self.line, self.col
@@ -1859,7 +1852,7 @@ class Lexer:
             elif state == 232:
                 if ch in REL_DEL:
                     state = 233
-                    return Token("RS_LESS_THAN_EQUAL", lexeme, self.line, start_col)
+                    return Token("<=", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '<='", self.line, self.col
                 )
@@ -1871,7 +1864,7 @@ class Lexer:
                     state = 236
                 elif ch in BASE_ASSIGN_DEL:
                     state = 235
-                    return Token("RS_ASSIGN", lexeme, self.line, start_col)
+                    return Token("=", lexeme, self.line, start_col)
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after '='", self.line, self.col
@@ -1881,7 +1874,7 @@ class Lexer:
             elif state == 236:
                 if ch in EQUALITY_DEL:
                     state = 237
-                    return Token("RS_EQUAL", lexeme, self.line, start_col)
+                    return Token("==", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '=='", self.line, self.col
                 )
@@ -1893,7 +1886,7 @@ class Lexer:
                     state = 240
                 elif ch in NOT_DEL:
                     state = 239
-                    return Token("RS_NOT", lexeme, self.line, start_col)
+                    return Token("!", lexeme, self.line, start_col)
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after '!'", self.line, self.col
@@ -1903,7 +1896,7 @@ class Lexer:
             elif state == 240:
                 if ch in EQUALITY_DEL:
                     state = 241
-                    return Token("RS_NOT_EQUAL", lexeme, self.line, start_col)
+                    return Token("!=", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '!='", self.line, self.col
                 )
@@ -1923,7 +1916,7 @@ class Lexer:
             elif state == 243:
                 if ch in LOG_DEL:
                     state = 244
-                    return Token("RS_AND", lexeme, self.line, start_col)
+                    return Token("&&", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '&&'", self.line, self.col
                 )
@@ -1943,7 +1936,7 @@ class Lexer:
             elif state == 246:
                 if ch in LOG_DEL:
                     state = 247
-                    return Token("RS_OR", lexeme, self.line, start_col)
+                    return Token("||", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '||'", self.line, self.col
                 )
@@ -1952,7 +1945,7 @@ class Lexer:
             elif state == 248:
                 if ch in LETTERS:
                     state = 249
-                    return Token("RS_DOT", lexeme, self.line, start_col)
+                    return Token(".", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '.'", self.line, self.col
                 )
@@ -1961,7 +1954,7 @@ class Lexer:
             elif state == 250:
                 if ch is None or ch in SPACE_DEL:
                     state = 251
-                    return Token("RS_TERMINATOR", lexeme, self.line, start_col)
+                    return Token(";", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after ';'", self.line, self.col
                 )
@@ -1970,7 +1963,7 @@ class Lexer:
             elif state == 252:
                 if ch in COMMA_DEL:
                     state = 253
-                    return Token("RS_COMMA", lexeme, self.line, start_col)
+                    return Token(",", lexeme, self.line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after ','", self.line, self.col
                 )
@@ -2041,7 +2034,7 @@ class Lexer:
                     state = 321
                 elif ch is None or ch in AETHER_LIT_DEL:
                     state = 287
-                    return Token("AETHER_LITERAL", lexeme, self.line, start_col)
+                    return Token("aeth_lit", lexeme, self.line, start_col)
                 elif ch in NUMBERS:
                     raise LexerError(
                         f"Leading zeros are not allowed ('{lexeme}{ch}')",
@@ -2071,7 +2064,7 @@ class Lexer:
                     state = 321
                 elif ch is None or ch in AETHER_LIT_DEL:
                     state = state + 1
-                    return Token("AETHER_LITERAL", lexeme, self.line, start_col)
+                    return Token("aeth_lit", lexeme, self.line, start_col)
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after aether literal '{lexeme}'",
@@ -2111,7 +2104,7 @@ class Lexer:
                             self.line,
                             start_col,
                         )
-                    return Token("ESSENCE_LITERAL", lexeme, self.line, start_col)
+                    return Token("ess_lit", lexeme, self.line, start_col)
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after essence literal '{lexeme}'",
@@ -2188,7 +2181,7 @@ class Lexer:
                     return (
                         None
                         if bad
-                        else Token("LIT_INSCRIPTION", lexeme, start_line, start_col)
+                        else Token("insc_lit", lexeme, start_line, start_col)
                     )
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after inscription literal",
