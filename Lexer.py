@@ -8,8 +8,8 @@ from typing import List, Optional
 LETTERS = set(string.ascii_letters)
 NONZERO = set("123456789")
 NUMBERS = set("0123456789")
-ASCII = set(string.printable)
-INSC_ASCII = ASCII - {'"', "\\"}
+ASCII = set(string.printable) - {"\x0b", "\x0c"}
+INSC_ASCII = ASCII - {'"', "\\", "\n", "\r", "\x0b", "\x0c"}
 ESCAPE_CHARS = {"n", "t", "r", "\\", '"'}
 UNDERSCORE = {"_"}
 ID_CHAR = LETTERS | NUMBERS | UNDERSCORE
@@ -87,11 +87,14 @@ MATH_DEL = LETTERS | NUMBERS | NEG_OP | PAREN_DEL
 CREMENT_DEL = (
     WHITESPACE | TERMINATOR | COMMA | CLOSE_PAREN | CLOSE_CURLY | CLOSE_BRACKET
 )
-REL_LOG_DEL = LETTERS | NUMBERS | WHITESPACE | NEG_OP | OPEN_PAREN
+REL_DEL = LETTERS | NUMBERS | WHITESPACE | NEG_OP | OPEN_PAREN
+EQUALITY_DEL = REL_DEL | OPEN_QUOTE
+LOG_DEL = REL_DEL | NOT_OP
 NOT_DEL = LETTERS | PAREN_DEL
+NEG_DEL = NUMBERS | LETTERS | OPEN_PAREN
 
 ASSIGN_DEL = LETTERS | NUMBERS | WHITESPACE | NEG_OP | OPEN_PAREN
-BASE_ASSIGN_DEL = OPEN_CURLY | OPEN_QUOTE | ASSIGN_DEL
+BASE_ASSIGN_DEL = NOT_OP | OPEN_CURLY | OPEN_QUOTE | ASSIGN_DEL
 
 # PUNCTUATION DELIMITERS
 TERMINATOR_DEL = CLOSE_CURLY | SPACE_DEL
@@ -178,10 +181,6 @@ TOKEN_START = (
     | {"#"}
 )
 
-# False: an inscription must close on the line it opened (an unterminated one stops at the end of that line).
-# True : a newline is allowed inside an inscription (an unterminated one runs to the end of the file).
-STRINGS_MAY_SPAN_LINES = False
-
 # ========== TOKEN STRUCTURE & CURSOR NAVIGATION ==========
 
 
@@ -260,40 +259,40 @@ class Lexer:
                     state = 20
                 elif ch == "d":
                     lexeme += self.advance()
-                    state = 68
+                    state = 62
                 elif ch == "e":
                     lexeme += self.advance()
-                    state = 77
+                    state = 71
                 elif ch == "f":
                     lexeme += self.advance()
-                    state = 85
+                    state = 79
                 elif ch == "g":
                     lexeme += self.advance()
-                    state = 94
+                    state = 88
                 elif ch == "i":
                     lexeme += self.advance()
-                    state = 103
+                    state = 97
                 elif ch == "m":
                     lexeme += self.advance()
-                    state = 120
+                    state = 114
                 elif ch == "n":
                     lexeme += self.advance()
-                    state = 129
+                    state = 123
                 elif ch == "p":
                     lexeme += self.advance()
-                    state = 134
+                    state = 128
                 elif ch == "r":
                     lexeme += self.advance()
-                    state = 142
+                    state = 136
                 elif ch == "s":
                     lexeme += self.advance()
-                    state = 157
+                    state = 151
                 elif ch == "y":
                     lexeme += self.advance()
-                    state = 188
+                    state = 182
                 elif ch in LETTERS:
                     lexeme += self.advance()
-                    state = 262
+                    state = 246
                 else:
                     raise LexerError(
                         f"Unexpected character {repr(ch)}", self.line, start_col
@@ -308,7 +307,7 @@ class Lexer:
                     lexeme += self.advance()
                     state = 8
                 else:
-                    state = 262
+                    state = 246
 
             # aether (2 -> 6)
             elif state == 2:
@@ -316,31 +315,31 @@ class Lexer:
                     lexeme += self.advance()
                     state = 3
                 else:
-                    state = 264
+                    state = 248
             elif state == 3:
                 if ch == "h":
                     lexeme += self.advance()
                     state = 4
                 else:
-                    state = 266
+                    state = 250
             elif state == 4:
                 if ch == "e":
                     lexeme += self.advance()
                     state = 5
                 else:
-                    state = 268
+                    state = 252
             elif state == 5:
                 if ch == "r":
                     lexeme += self.advance()
                     state = 6
                 else:
-                    state = 270
+                    state = 254
             elif state == 6:
                 if ch is None or ch in WHITESPACE:
                     state = 7
                     return Token("RW_AETHER", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 272
+                    state = 256
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -354,19 +353,19 @@ class Lexer:
                     lexeme += self.advance()
                     state = 9
                 else:
-                    state = 264
+                    state = 248
             elif state == 9:
                 if ch == "a":
                     lexeme += self.advance()
                     state = 10
                 else:
-                    state = 266
+                    state = 250
             elif state == 10:
                 if ch is None or ch in WHITESPACE:
                     state = 11
                     return Token("RW_AURA", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 268
+                    state = 252
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -380,43 +379,43 @@ class Lexer:
                     lexeme += self.advance()
                     state = 13
                 else:
-                    state = 262
+                    state = 246
             elif state == 13:
                 if ch == "e":
                     lexeme += self.advance()
                     state = 14
                 else:
-                    state = 264
+                    state = 248
             elif state == 14:
                 if ch == "s":
                     lexeme += self.advance()
                     state = 15
                 else:
-                    state = 266
+                    state = 250
             elif state == 15:
                 if ch == "s":
                     lexeme += self.advance()
                     state = 16
                 else:
-                    state = 268
+                    state = 252
             elif state == 16:
                 if ch == "e":
                     lexeme += self.advance()
                     state = 17
                 else:
-                    state = 270
+                    state = 254
             elif state == 17:
                 if ch == "d":
                     lexeme += self.advance()
                     state = 18
                 else:
-                    state = 272
+                    state = 256
             elif state == 18:
                 if ch is None or ch in LIT_DEL:
                     state = 19
                     return Token("RW_BLESSED", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 274
+                    state = 258
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -440,12 +439,12 @@ class Lexer:
                     state = 40
                 elif ch == "r":
                     lexeme += self.advance()
-                    state = 53
+                    state = 47
                 elif ch == "u":
                     lexeme += self.advance()
-                    state = 62
+                    state = 56
                 else:
-                    state = 262
+                    state = 246
 
             # cast (21-23)
             elif state == 21:
@@ -453,19 +452,19 @@ class Lexer:
                     lexeme += self.advance()
                     state = 22
                 else:
-                    state = 264
+                    state = 248
             elif state == 22:
                 if ch == "t":
                     lexeme += self.advance()
                     state = 23
                 else:
-                    state = 266
+                    state = 250
             elif state == 23:
                 if ch is None or ch in PAREN_DEL:
                     state = 24
                     return Token("RW_CAST", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 268
+                    state = 252
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -479,7 +478,7 @@ class Lexer:
                     lexeme += self.advance()
                     state = 26
                 else:
-                    state = 264
+                    state = 248
             elif state == 26:
                 if ch == "n":
                     lexeme += self.advance()
@@ -488,19 +487,19 @@ class Lexer:
                     lexeme += self.advance()
                     state = 30
                 else:
-                    state = 266
+                    state = 250
             elif state == 27:
                 if ch == "t":
                     lexeme += self.advance()
                     state = 28
                 else:
-                    state = 268
+                    state = 252
             elif state == 28:
                 if ch is None or ch in PAREN_DEL:
                     state = 29
                     return Token("RW_CHANT", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 270
+                    state = 254
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -514,19 +513,19 @@ class Lexer:
                     lexeme += self.advance()
                     state = 31
                 else:
-                    state = 268
+                    state = 252
             elif state == 31:
                 if ch == "e":
                     lexeme += self.advance()
                     state = 32
                 else:
-                    state = 270
+                    state = 254
             elif state == 32:
                 if ch is None or ch in PAREN_DEL:
                     state = 33
                     return Token("RW_CHARGE", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 272
+                    state = 256
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -540,78 +539,31 @@ class Lexer:
                     lexeme += self.advance()
                     state = 35
                 else:
-                    state = 264
+                    state = 248
             elif state == 35:
                 if ch == "c":
                     lexeme += self.advance()
                     state = 36
                 else:
-                    state = 266
+                    state = 250
             elif state == 36:
                 if ch == "l":
                     lexeme += self.advance()
                     state = 37
                 else:
-                    state = 268
+                    state = 252
             elif state == 37:
                 if ch == "e":
                     lexeme += self.advance()
                     state = 38
                 else:
-                    state = 270
+                    state = 254
             elif state == 38:
                 if ch is None or ch in WHITESPACE:
                     state = 39
                     return Token("RW_CIRCLE", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 272
-                else:
-                    raise LexerError(
-                        f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
-                        self.line,
-                        self.col,
-                    )
-
-            # conjure (40-45)
-            elif state == 40:
-                if ch == "n":
-                    lexeme += self.advance()
-                    state = 41
-                elif ch == "u":
-                    lexeme += self.advance()
-                    state = 47
-                else:
-                    state = 264
-            elif state == 41:
-                if ch == "j":
-                    lexeme += self.advance()
-                    state = 42
-                else:
-                    state = 266
-            elif state == 42:
-                if ch == "u":
-                    lexeme += self.advance()
-                    state = 43
-                else:
-                    state = 268
-            elif state == 43:
-                if ch == "r":
-                    lexeme += self.advance()
-                    state = 44
-                else:
-                    state = 270
-            elif state == 44:
-                if ch == "e":
-                    lexeme += self.advance()
-                    state = 45
-                else:
-                    state = 272
-            elif state == 45:
-                if ch is None or ch in WHITESPACE:
-                    state = 46
-                    return Token("RW_CONJURE", lexeme, self.line, start_col)
-                elif ch in ID_CHAR:
-                    state = 274
+                    state = 256
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -620,36 +572,42 @@ class Lexer:
                     )
 
             # counter (47-51)
-            elif state == 47:
+            elif state == 40:
+                if ch == "u":
+                    lexeme += self.advance()
+                    state = 41
+                else:
+                    state = 248
+            elif state == 41:
                 if ch == "n":
                     lexeme += self.advance()
-                    state = 48
+                    state = 42
                 else:
-                    state = 266
-            elif state == 48:
+                    state = 250
+            elif state == 42:
                 if ch == "t":
                     lexeme += self.advance()
-                    state = 49
+                    state = 43
                 else:
-                    state = 268
-            elif state == 49:
+                    state = 252
+            elif state == 43:
                 if ch == "e":
                     lexeme += self.advance()
-                    state = 50
+                    state = 44
                 else:
-                    state = 270
-            elif state == 50:
+                    state = 254
+            elif state == 44:
                 if ch == "r":
                     lexeme += self.advance()
-                    state = 51
+                    state = 45
                 else:
-                    state = 272
-            elif state == 51:
+                    state = 256
+            elif state == 45:
                 if ch is None or ch in CURLY_DEL:
-                    state = 52
+                    state = 46
                     return Token("RW_COUNTER", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 274
+                    state = 258
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -658,54 +616,54 @@ class Lexer:
                     )
 
             # crossroad (53-60)
-            elif state == 53:
+            elif state == 47:
                 if ch == "o":
+                    lexeme += self.advance()
+                    state = 48
+                else:
+                    state = 248
+            elif state == 48:
+                if ch == "s":
+                    lexeme += self.advance()
+                    state = 49
+                else:
+                    state = 250
+            elif state == 49:
+                if ch == "s":
+                    lexeme += self.advance()
+                    state = 50
+                else:
+                    state = 252
+            elif state == 50:
+                if ch == "r":
+                    lexeme += self.advance()
+                    state = 51
+                else:
+                    state = 254
+            elif state == 51:
+                if ch == "o":
+                    lexeme += self.advance()
+                    state = 52
+                else:
+                    state = 256
+            elif state == 52:
+                if ch == "a":
+                    lexeme += self.advance()
+                    state = 53
+                else:
+                    state = 258
+            elif state == 53:
+                if ch == "d":
                     lexeme += self.advance()
                     state = 54
                 else:
-                    state = 264
+                    state = 260
             elif state == 54:
-                if ch == "s":
-                    lexeme += self.advance()
-                    state = 55
-                else:
-                    state = 266
-            elif state == 55:
-                if ch == "s":
-                    lexeme += self.advance()
-                    state = 56
-                else:
-                    state = 268
-            elif state == 56:
-                if ch == "r":
-                    lexeme += self.advance()
-                    state = 57
-                else:
-                    state = 270
-            elif state == 57:
-                if ch == "o":
-                    lexeme += self.advance()
-                    state = 58
-                else:
-                    state = 272
-            elif state == 58:
-                if ch == "a":
-                    lexeme += self.advance()
-                    state = 59
-                else:
-                    state = 274
-            elif state == 59:
-                if ch == "d":
-                    lexeme += self.advance()
-                    state = 60
-                else:
-                    state = 276
-            elif state == 60:
                 if ch is None or ch in PAREN_DEL:
-                    state = 61
+                    state = 55
                     return Token("RW_CROSSROAD", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 278
+                    state = 262
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -714,36 +672,36 @@ class Lexer:
                     )
 
             # cursed (62-66)
-            elif state == 62:
+            elif state == 56:
                 if ch == "r":
                     lexeme += self.advance()
-                    state = 63
+                    state = 57
                 else:
-                    state = 264
-            elif state == 63:
+                    state = 248
+            elif state == 57:
                 if ch == "s":
                     lexeme += self.advance()
-                    state = 64
+                    state = 58
                 else:
-                    state = 266
-            elif state == 64:
+                    state = 250
+            elif state == 58:
                 if ch == "e":
                     lexeme += self.advance()
-                    state = 65
+                    state = 59
                 else:
-                    state = 268
-            elif state == 65:
+                    state = 252
+            elif state == 59:
                 if ch == "d":
                     lexeme += self.advance()
-                    state = 66
+                    state = 60
                 else:
-                    state = 270
-            elif state == 66:
+                    state = 254
+            elif state == 60:
                 if ch is None or ch in LIT_DEL:
-                    state = 67
+                    state = 61
                     return Token("RW_CURSED", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 272
+                    state = 256
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -752,54 +710,54 @@ class Lexer:
                     )
 
             # darkness (68-76)
-            elif state == 68:
+            elif state == 62:
                 if ch == "a":
+                    lexeme += self.advance()
+                    state = 63
+                else:
+                    state = 246
+            elif state == 63:
+                if ch == "r":
+                    lexeme += self.advance()
+                    state = 64
+                else:
+                    state = 248
+            elif state == 64:
+                if ch == "k":
+                    lexeme += self.advance()
+                    state = 65
+                else:
+                    state = 250
+            elif state == 65:
+                if ch == "n":
+                    lexeme += self.advance()
+                    state = 66
+                else:
+                    state = 252
+            elif state == 66:
+                if ch == "e":
+                    lexeme += self.advance()
+                    state = 67
+                else:
+                    state = 254
+            elif state == 67:
+                if ch == "s":
+                    lexeme += self.advance()
+                    state = 68
+                else:
+                    state = 256
+            elif state == 68:
+                if ch == "s":
                     lexeme += self.advance()
                     state = 69
                 else:
-                    state = 262
+                    state = 258
             elif state == 69:
-                if ch == "r":
-                    lexeme += self.advance()
-                    state = 70
-                else:
-                    state = 264
-            elif state == 70:
-                if ch == "k":
-                    lexeme += self.advance()
-                    state = 71
-                else:
-                    state = 266
-            elif state == 71:
-                if ch == "n":
-                    lexeme += self.advance()
-                    state = 72
-                else:
-                    state = 268
-            elif state == 72:
-                if ch == "e":
-                    lexeme += self.advance()
-                    state = 73
-                else:
-                    state = 270
-            elif state == 73:
-                if ch == "s":
-                    lexeme += self.advance()
-                    state = 74
-                else:
-                    state = 272
-            elif state == 74:
-                if ch == "s":
-                    lexeme += self.advance()
-                    state = 75
-                else:
-                    state = 274
-            elif state == 75:
                 if ch is None or ch in WHITESPACE:
-                    state = 76
+                    state = 70
                     return Token("RW_DARKNESS", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 276
+                    state = 260
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -808,48 +766,48 @@ class Lexer:
                     )
 
             # essence (77-76)
-            elif state == 77:
+            elif state == 71:
                 if ch == "s":
                     lexeme += self.advance()
-                    state = 78
+                    state = 72
                 else:
-                    state = 262
-            elif state == 78:
+                    state = 246
+            elif state == 72:
                 if ch == "s":
                     lexeme += self.advance()
-                    state = 79
+                    state = 73
                 else:
-                    state = 264
-            elif state == 79:
+                    state = 248
+            elif state == 73:
                 if ch == "e":
                     lexeme += self.advance()
-                    state = 80
+                    state = 74
                 else:
-                    state = 266
-            elif state == 80:
+                    state = 250
+            elif state == 74:
                 if ch == "n":
                     lexeme += self.advance()
-                    state = 81
+                    state = 75
                 else:
-                    state = 268
-            elif state == 81:
+                    state = 252
+            elif state == 75:
                 if ch == "c":
                     lexeme += self.advance()
-                    state = 82
+                    state = 76
                 else:
-                    state = 270
-            elif state == 82:
+                    state = 254
+            elif state == 76:
                 if ch == "e":
                     lexeme += self.advance()
-                    state = 83
+                    state = 77
                 else:
-                    state = 272
-            elif state == 83:
+                    state = 256
+            elif state == 77:
                 if ch is None or ch in WHITESPACE:
-                    state = 84
+                    state = 78
                     return Token("RW_ESSENCE", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 274
+                    state = 258
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -858,54 +816,54 @@ class Lexer:
                     )
 
             # fallback (85-93)
-            elif state == 85:
+            elif state == 79:
                 if ch == "a":
+                    lexeme += self.advance()
+                    state = 80
+                else:
+                    state = 246
+            elif state == 80:
+                if ch == "l":
+                    lexeme += self.advance()
+                    state = 81
+                else:
+                    state = 248
+            elif state == 81:
+                if ch == "l":
+                    lexeme += self.advance()
+                    state = 82
+                else:
+                    state = 250
+            elif state == 82:
+                if ch == "b":
+                    lexeme += self.advance()
+                    state = 83
+                else:
+                    state = 252
+            elif state == 83:
+                if ch == "a":
+                    lexeme += self.advance()
+                    state = 84
+                else:
+                    state = 254
+            elif state == 84:
+                if ch == "c":
+                    lexeme += self.advance()
+                    state = 85
+                else:
+                    state = 256
+            elif state == 85:
+                if ch == "k":
                     lexeme += self.advance()
                     state = 86
                 else:
-                    state = 262
+                    state = 258
             elif state == 86:
-                if ch == "l":
-                    lexeme += self.advance()
-                    state = 87
-                else:
-                    state = 264
-            elif state == 87:
-                if ch == "l":
-                    lexeme += self.advance()
-                    state = 88
-                else:
-                    state = 266
-            elif state == 88:
-                if ch == "b":
-                    lexeme += self.advance()
-                    state = 89
-                else:
-                    state = 268
-            elif state == 89:
-                if ch == "a":
-                    lexeme += self.advance()
-                    state = 90
-                else:
-                    state = 270
-            elif state == 90:
-                if ch == "c":
-                    lexeme += self.advance()
-                    state = 91
-                else:
-                    state = 272
-            elif state == 91:
-                if ch == "k":
-                    lexeme += self.advance()
-                    state = 92
-                else:
-                    state = 274
-            elif state == 92:
                 if ch is None or ch in CURLY_DEL:
-                    state = 93
+                    state = 87
                     return Token("RW_FALLBACK", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 276
+                    state = 260
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -914,54 +872,54 @@ class Lexer:
                     )
 
             # grimoire (94-102)
-            elif state == 94:
+            elif state == 88:
                 if ch == "r":
+                    lexeme += self.advance()
+                    state = 89
+                else:
+                    state = 246
+            elif state == 89:
+                if ch == "i":
+                    lexeme += self.advance()
+                    state = 90
+                else:
+                    state = 248
+            elif state == 90:
+                if ch == "m":
+                    lexeme += self.advance()
+                    state = 91
+                else:
+                    state = 250
+            elif state == 91:
+                if ch == "o":
+                    lexeme += self.advance()
+                    state = 92
+                else:
+                    state = 252
+            elif state == 92:
+                if ch == "i":
+                    lexeme += self.advance()
+                    state = 93
+                else:
+                    state = 254
+            elif state == 93:
+                if ch == "r":
+                    lexeme += self.advance()
+                    state = 94
+                else:
+                    state = 256
+            elif state == 94:
+                if ch == "e":
                     lexeme += self.advance()
                     state = 95
                 else:
-                    state = 262
+                    state = 258
             elif state == 95:
-                if ch == "i":
-                    lexeme += self.advance()
-                    state = 96
-                else:
-                    state = 264
-            elif state == 96:
-                if ch == "m":
-                    lexeme += self.advance()
-                    state = 97
-                else:
-                    state = 266
-            elif state == 97:
-                if ch == "o":
-                    lexeme += self.advance()
-                    state = 98
-                else:
-                    state = 268
-            elif state == 98:
-                if ch == "i":
-                    lexeme += self.advance()
-                    state = 99
-                else:
-                    state = 270
-            elif state == 99:
-                if ch == "r":
-                    lexeme += self.advance()
-                    state = 100
-                else:
-                    state = 272
-            elif state == 100:
-                if ch == "e":
-                    lexeme += self.advance()
-                    state = 101
-                else:
-                    state = 274
-            elif state == 101:
                 if ch is None or ch in PAREN_DEL:
-                    state = 102
+                    state = 96
                     return Token("RW_GRIMOIRE", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 276
+                    state = 260
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -971,75 +929,75 @@ class Lexer:
 
             # INSCRIPTION (103-114), INVOKE (115-119)
             # inscription (103 - 113)
-            elif state == 103:
+            elif state == 97:
                 if ch == "n":
                     lexeme += self.advance()
-                    state = 104
+                    state = 98
                 else:
-                    state = 262
-            elif state == 104:
+                    state = 246
+            elif state == 98:
                 if ch == "s":
                     lexeme += self.advance()
-                    state = 105
+                    state = 99
                 elif ch == "v":
-                    lexeme += self.advance()
-                    state = 115
-                else:
-                    state = 264
-            elif state == 105:
-                if ch == "c":
-                    lexeme += self.advance()
-                    state = 106
-                else:
-                    state = 266
-            elif state == 106:
-                if ch == "r":
-                    lexeme += self.advance()
-                    state = 107
-                else:
-                    state = 268
-            elif state == 107:
-                if ch == "i":
-                    lexeme += self.advance()
-                    state = 108
-                else:
-                    state = 270
-            elif state == 108:
-                if ch == "p":
                     lexeme += self.advance()
                     state = 109
                 else:
-                    state = 272
-            elif state == 109:
-                if ch == "t":
+                    state = 248
+            elif state == 99:
+                if ch == "c":
                     lexeme += self.advance()
-                    state = 110
+                    state = 100
                 else:
-                    state = 274
-            elif state == 110:
+                    state = 250
+            elif state == 100:
+                if ch == "r":
+                    lexeme += self.advance()
+                    state = 101
+                else:
+                    state = 252
+            elif state == 101:
                 if ch == "i":
                     lexeme += self.advance()
-                    state = 111
+                    state = 102
                 else:
-                    state = 276
-            elif state == 111:
+                    state = 254
+            elif state == 102:
+                if ch == "p":
+                    lexeme += self.advance()
+                    state = 103
+                else:
+                    state = 256
+            elif state == 103:
+                if ch == "t":
+                    lexeme += self.advance()
+                    state = 104
+                else:
+                    state = 258
+            elif state == 104:
+                if ch == "i":
+                    lexeme += self.advance()
+                    state = 105
+                else:
+                    state = 260
+            elif state == 105:
                 if ch == "o":
                     lexeme += self.advance()
-                    state = 112
+                    state = 106
                 else:
-                    state = 278
-            elif state == 112:
+                    state = 262
+            elif state == 106:
                 if ch == "n":
                     lexeme += self.advance()
-                    state = 113
+                    state = 107
                 else:
-                    state = 280
-            elif state == 113:
+                    state = 264
+            elif state == 107:
                 if ch is None or ch in WHITESPACE:
-                    state = 114
+                    state = 108
                     return Token("RW_INSCRIPTION", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 282
+                    state = 266
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -1048,30 +1006,30 @@ class Lexer:
                     )
 
             # invoke (115-118)
-            elif state == 115:
+            elif state == 109:
                 if ch == "o":
                     lexeme += self.advance()
-                    state = 116
+                    state = 110
                 else:
-                    state = 266
-            elif state == 116:
+                    state = 250
+            elif state == 110:
                 if ch == "k":
                     lexeme += self.advance()
-                    state = 117
+                    state = 111
                 else:
-                    state = 268
-            elif state == 117:
+                    state = 252
+            elif state == 111:
                 if ch == "e":
                     lexeme += self.advance()
-                    state = 118
+                    state = 112
                 else:
-                    state = 270
-            elif state == 118:
+                    state = 254
+            elif state == 112:
                 if ch is None or ch in CURLY_DEL:
-                    state = 119
+                    state = 113
                     return Token("RW_INVOKE", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 272
+                    state = 256
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -1080,54 +1038,54 @@ class Lexer:
                     )
 
             # manifest (200-208)
-            elif state == 120:
+            elif state == 114:
                 if ch == "a":
+                    lexeme += self.advance()
+                    state = 115
+                else:
+                    state = 246
+            elif state == 115:
+                if ch == "n":
+                    lexeme += self.advance()
+                    state = 116
+                else:
+                    state = 248
+            elif state == 116:
+                if ch == "i":
+                    lexeme += self.advance()
+                    state = 117
+                else:
+                    state = 250
+            elif state == 117:
+                if ch == "f":
+                    lexeme += self.advance()
+                    state = 118
+                else:
+                    state = 252
+            elif state == 118:
+                if ch == "e":
+                    lexeme += self.advance()
+                    state = 119
+                else:
+                    state = 254
+            elif state == 119:
+                if ch == "s":
+                    lexeme += self.advance()
+                    state = 120
+                else:
+                    state = 256
+            elif state == 120:
+                if ch == "t":
                     lexeme += self.advance()
                     state = 121
                 else:
-                    state = 262
+                    state = 258
             elif state == 121:
-                if ch == "n":
-                    lexeme += self.advance()
-                    state = 122
-                else:
-                    state = 264
-            elif state == 122:
-                if ch == "i":
-                    lexeme += self.advance()
-                    state = 123
-                else:
-                    state = 266
-            elif state == 123:
-                if ch == "f":
-                    lexeme += self.advance()
-                    state = 124
-                else:
-                    state = 268
-            elif state == 124:
-                if ch == "e":
-                    lexeme += self.advance()
-                    state = 125
-                else:
-                    state = 270
-            elif state == 125:
-                if ch == "s":
-                    lexeme += self.advance()
-                    state = 126
-                else:
-                    state = 272
-            elif state == 126:
-                if ch == "t":
-                    lexeme += self.advance()
-                    state = 127
-                else:
-                    state = 274
-            elif state == 127:
                 if ch is None or ch in PAREN_DEL:
-                    state = 128
+                    state = 122
                     return Token("RW_MANIFEST", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 276
+                    state = 260
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -1136,30 +1094,30 @@ class Lexer:
                     )
 
             # null (209-213)
-            elif state == 129:
+            elif state == 123:
                 if ch == "u":
                     lexeme += self.advance()
-                    state = 130
+                    state = 124
                 else:
-                    state = 262
-            elif state == 130:
+                    state = 246
+            elif state == 124:
                 if ch == "l":
                     lexeme += self.advance()
-                    state = 131
+                    state = 125
                 else:
-                    state = 264
-            elif state == 131:
+                    state = 248
+            elif state == 125:
                 if ch == "l":
                     lexeme += self.advance()
-                    state = 132
+                    state = 126
                 else:
-                    state = 266
-            elif state == 132:
+                    state = 250
+            elif state == 126:
                 if ch is None or ch in LIT_DEL:
-                    state = 133
+                    state = 127
                     return Token("RW_NULL", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 268
+                    state = 252
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -1168,48 +1126,48 @@ class Lexer:
                     )
 
             # persist (214-221)
-            elif state == 134:
+            elif state == 128:
                 if ch == "e":
                     lexeme += self.advance()
-                    state = 135
+                    state = 129
                 else:
-                    state = 262
-            elif state == 135:
+                    state = 246
+            elif state == 129:
                 if ch == "r":
                     lexeme += self.advance()
-                    state = 136
+                    state = 130
                 else:
-                    state = 264
-            elif state == 136:
+                    state = 248
+            elif state == 130:
                 if ch == "s":
                     lexeme += self.advance()
-                    state = 137
+                    state = 131
                 else:
-                    state = 266
-            elif state == 137:
+                    state = 250
+            elif state == 131:
                 if ch == "i":
                     lexeme += self.advance()
-                    state = 138
+                    state = 132
                 else:
-                    state = 268
-            elif state == 138:
+                    state = 252
+            elif state == 132:
                 if ch == "s":
                     lexeme += self.advance()
-                    state = 139
+                    state = 133
                 else:
-                    state = 270
-            elif state == 139:
+                    state = 254
+            elif state == 133:
                 if ch == "t":
                     lexeme += self.advance()
-                    state = 140
+                    state = 134
                 else:
-                    state = 272
-            elif state == 140:
+                    state = 256
+            elif state == 134:
                 if ch is None or ch in TRANSFER_DEL:
-                    state = 141
+                    state = 135
                     return Token("RW_PERSIST", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 274
+                    state = 258
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -1218,35 +1176,35 @@ class Lexer:
                     )
 
             # RUNE (142-146), REMANIFEST (147-156)
-            elif state == 142:
+            elif state == 136:
                 if ch == "u":
                     lexeme += self.advance()
-                    state = 143
+                    state = 137
                 elif ch == "e":
                     lexeme += self.advance()
-                    state = 147
+                    state = 141
                 else:
-                    state = 262
+                    state = 246
 
             # rune (142-145)
-            elif state == 143:
+            elif state == 137:
                 if ch == "n":
                     lexeme += self.advance()
-                    state = 144
+                    state = 138
                 else:
-                    state = 264
-            elif state == 144:
+                    state = 248
+            elif state == 138:
                 if ch == "e":
                     lexeme += self.advance()
-                    state = 145
+                    state = 139
                 else:
-                    state = 266
-            elif state == 145:
+                    state = 250
+            elif state == 139:
                 if ch is None or ch in WHITESPACE:
-                    state = 146
+                    state = 140
                     return Token("RW_RUNE", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 268
+                    state = 252
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -1255,60 +1213,60 @@ class Lexer:
                     )
 
             # remanifest (147-155)
-            elif state == 147:
+            elif state == 141:
                 if ch == "m":
+                    lexeme += self.advance()
+                    state = 142
+                else:
+                    state = 248
+            elif state == 142:
+                if ch == "a":
+                    lexeme += self.advance()
+                    state = 143
+                else:
+                    state = 250
+            elif state == 143:
+                if ch == "n":
+                    lexeme += self.advance()
+                    state = 144
+                else:
+                    state = 252
+            elif state == 144:
+                if ch == "i":
+                    lexeme += self.advance()
+                    state = 145
+                else:
+                    state = 254
+            elif state == 145:
+                if ch == "f":
+                    lexeme += self.advance()
+                    state = 146
+                else:
+                    state = 256
+            elif state == 146:
+                if ch == "e":
+                    lexeme += self.advance()
+                    state = 147
+                else:
+                    state = 258
+            elif state == 147:
+                if ch == "s":
                     lexeme += self.advance()
                     state = 148
                 else:
-                    state = 264
+                    state = 260
             elif state == 148:
-                if ch == "a":
+                if ch == "t":
                     lexeme += self.advance()
                     state = 149
                 else:
-                    state = 266
+                    state = 262
             elif state == 149:
-                if ch == "n":
-                    lexeme += self.advance()
-                    state = 150
-                else:
-                    state = 268
-            elif state == 150:
-                if ch == "i":
-                    lexeme += self.advance()
-                    state = 151
-                else:
-                    state = 270
-            elif state == 151:
-                if ch == "f":
-                    lexeme += self.advance()
-                    state = 152
-                else:
-                    state = 272
-            elif state == 152:
-                if ch == "e":
-                    lexeme += self.advance()
-                    state = 153
-                else:
-                    state = 274
-            elif state == 153:
-                if ch == "s":
-                    lexeme += self.advance()
-                    state = 154
-                else:
-                    state = 276
-            elif state == 154:
-                if ch == "t":
-                    lexeme += self.advance()
-                    state = 155
-                else:
-                    state = 278
-            elif state == 155:
                 if ch is None or ch in PAREN_DEL:
-                    state = 156
+                    state = 150
                     return Token("RW_REMANIFEST", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 280
+                    state = 264
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -1317,56 +1275,56 @@ class Lexer:
                     )
 
             # SCROLL (157-163), SEALED (164-169), SHATTER (170-176), SPELL (177-181), SUMMON (182-187)
-            elif state == 157:
+            elif state == 151:
                 if ch == "c":
                     lexeme += self.advance()
-                    state = 158
+                    state = 152
                 elif ch == "e":
                     lexeme += self.advance()
-                    state = 164
+                    state = 158
                 elif ch == "h":
                     lexeme += self.advance()
-                    state = 170
+                    state = 164
                 elif ch == "p":
                     lexeme += self.advance()
-                    state = 177
+                    state = 171
                 elif ch == "u":
                     lexeme += self.advance()
-                    state = 182
+                    state = 176
                 else:
-                    state = 262
+                    state = 246
 
             # scroll (158-162)
-            elif state == 158:
+            elif state == 152:
                 if ch == "r":
                     lexeme += self.advance()
-                    state = 159
+                    state = 153
                 else:
-                    state = 264
-            elif state == 159:
+                    state = 248
+            elif state == 153:
                 if ch == "o":
                     lexeme += self.advance()
-                    state = 160
+                    state = 154
                 else:
-                    state = 266
-            elif state == 160:
+                    state = 250
+            elif state == 154:
                 if ch == "l":
                     lexeme += self.advance()
-                    state = 161
+                    state = 155
                 else:
-                    state = 268
-            elif state == 161:
+                    state = 252
+            elif state == 155:
                 if ch == "l":
                     lexeme += self.advance()
-                    state = 162
+                    state = 156
                 else:
-                    state = 270
-            elif state == 162:
+                    state = 254
+            elif state == 156:
                 if ch is None or ch in PAREN_DEL:
-                    state = 163
+                    state = 157
                     return Token("RW_SCROLL", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 272
+                    state = 256
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -1375,36 +1333,36 @@ class Lexer:
                     )
 
             # sealed (164-168)
-            elif state == 164:
+            elif state == 158:
                 if ch == "a":
                     lexeme += self.advance()
-                    state = 165
+                    state = 159
                 else:
-                    state = 264
-            elif state == 165:
+                    state = 248
+            elif state == 159:
                 if ch == "l":
                     lexeme += self.advance()
-                    state = 166
+                    state = 160
                 else:
-                    state = 266
-            elif state == 166:
+                    state = 250
+            elif state == 160:
                 if ch == "e":
                     lexeme += self.advance()
-                    state = 167
+                    state = 161
                 else:
-                    state = 268
-            elif state == 167:
+                    state = 252
+            elif state == 161:
                 if ch == "d":
                     lexeme += self.advance()
-                    state = 168
+                    state = 162
                 else:
-                    state = 270
-            elif state == 168:
+                    state = 254
+            elif state == 162:
                 if ch is None or ch in WHITESPACE:
-                    state = 169
+                    state = 163
                     return Token("RW_SEALED", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 272
+                    state = 256
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -1413,42 +1371,42 @@ class Lexer:
                     )
 
             # shatter (170-175)
-            elif state == 170:
+            elif state == 164:
                 if ch == "a":
                     lexeme += self.advance()
-                    state = 171
+                    state = 165
                 else:
-                    state = 264
-            elif state == 171:
+                    state = 248
+            elif state == 165:
                 if ch == "t":
                     lexeme += self.advance()
-                    state = 172
+                    state = 166
                 else:
-                    state = 266
-            elif state == 172:
+                    state = 250
+            elif state == 166:
                 if ch == "t":
                     lexeme += self.advance()
-                    state = 173
+                    state = 167
                 else:
-                    state = 268
-            elif state == 173:
+                    state = 252
+            elif state == 167:
                 if ch == "e":
                     lexeme += self.advance()
-                    state = 174
+                    state = 168
                 else:
-                    state = 270
-            elif state == 174:
+                    state = 254
+            elif state == 168:
                 if ch == "r":
                     lexeme += self.advance()
-                    state = 175
+                    state = 169
                 else:
-                    state = 272
-            elif state == 175:
+                    state = 256
+            elif state == 169:
                 if ch is None or ch in TRANSFER_DEL:
-                    state = 176
+                    state = 170
                     return Token("RW_SHATTER", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 274
+                    state = 258
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -1457,30 +1415,30 @@ class Lexer:
                     )
 
             # spell (177-180)
-            elif state == 177:
+            elif state == 171:
                 if ch == "e":
                     lexeme += self.advance()
-                    state = 178
+                    state = 172
                 else:
-                    state = 264
-            elif state == 178:
+                    state = 248
+            elif state == 172:
                 if ch == "l":
                     lexeme += self.advance()
-                    state = 179
+                    state = 173
                 else:
-                    state = 266
-            elif state == 179:
+                    state = 250
+            elif state == 173:
                 if ch == "l":
                     lexeme += self.advance()
-                    state = 180
+                    state = 174
                 else:
-                    state = 268
-            elif state == 180:
+                    state = 252
+            elif state == 174:
                 if ch is None or ch in WHITESPACE:
-                    state = 181
+                    state = 175
                     return Token("RW_SPELL", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 270
+                    state = 254
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -1489,36 +1447,36 @@ class Lexer:
                     )
 
             # summon (182-186)
-            elif state == 182:
+            elif state == 176:
                 if ch == "m":
                     lexeme += self.advance()
-                    state = 183
+                    state = 177
                 else:
-                    state = 264
-            elif state == 183:
+                    state = 248
+            elif state == 177:
                 if ch == "m":
                     lexeme += self.advance()
-                    state = 184
+                    state = 178
                 else:
-                    state = 266
-            elif state == 184:
+                    state = 250
+            elif state == 178:
                 if ch == "o":
                     lexeme += self.advance()
-                    state = 185
+                    state = 179
                 else:
-                    state = 268
-            elif state == 185:
+                    state = 252
+            elif state == 179:
                 if ch == "n":
                     lexeme += self.advance()
-                    state = 186
+                    state = 180
                 else:
-                    state = 270
-            elif state == 186:
+                    state = 254
+            elif state == 180:
                 if ch is None or ch in WHITESPACE:
-                    state = 187
+                    state = 181
                     return Token("RW_SUMMON", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 272
+                    state = 256
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -1527,36 +1485,36 @@ class Lexer:
                     )
 
             # yield (188-193)
-            elif state == 188:
+            elif state == 182:
                 if ch == "i":
                     lexeme += self.advance()
-                    state = 189
+                    state = 183
                 else:
-                    state = 262
-            elif state == 189:
+                    state = 246
+            elif state == 183:
                 if ch == "e":
                     lexeme += self.advance()
-                    state = 190
+                    state = 184
                 else:
-                    state = 264
-            elif state == 190:
+                    state = 248
+            elif state == 184:
                 if ch == "l":
                     lexeme += self.advance()
-                    state = 191
+                    state = 185
                 else:
-                    state = 266
-            elif state == 191:
+                    state = 250
+            elif state == 185:
                 if ch == "d":
                     lexeme += self.advance()
-                    state = 192
+                    state = 186
                 else:
-                    state = 268
-            elif state == 192:
+                    state = 252
+            elif state == 186:
                 if ch is None or ch in TRANSFER_DEL:
-                    state = 193
+                    state = 187
                     return Token("RW_YIELD", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    state = 270
+                    state = 254
                 else:
                     raise LexerError(
                         f"Invalid delimiter '{ch}' after keyword '{lexeme}'",
@@ -1564,13 +1522,13 @@ class Lexer:
                         self.col,
                     )
 
-            # IDENTIFIER STATES: 262-298
-            elif 262 <= state <= 292 and state % 2 == 0:
+            # IDENTIFIER STATES: 246-298
+            elif 246 <= state <= 276 and state % 2 == 0:
                 if ch in ID_DEL or ch is None:
                     state = state + 1
                     return Token("IDENTIFIER", lexeme, self.line, start_col)
                 elif ch in ID_CHAR:
-                    if state == 292:
+                    if state == 276:
                         raise LexerError(
                             f"'{lexeme}' has invalid delimiter '{ch}'",
                             self.line,
@@ -1597,31 +1555,31 @@ class Lexer:
             if state == 0:
                 if ch == "(":
                     lexeme += self.advance()
-                    state = 194
+                    state = 188
                 elif ch == ")":
                     lexeme += self.advance()
-                    state = 196
+                    state = 190
                 elif ch == "{":
                     lexeme += self.advance()
-                    state = 198
+                    state = 192
                 elif ch == "}":
                     lexeme += self.advance()
-                    state = 200
+                    state = 194
                 elif ch == "[":
                     lexeme += self.advance()
-                    state = 202
+                    state = 196
                 elif ch == "]":
                     lexeme += self.advance()
-                    state = 204
+                    state = 198
                 elif ch == "~":
                     lexeme += self.advance()
-                    state = 206
+                    state = 200
                 elif ch == "+":
                     lexeme += self.advance()
-                    state = 208
+                    state = 202
                 elif ch == "-":
                     lexeme += self.advance()
-                    state = 214
+                    state = 208
                 elif ch == "*":
                     lexeme += self.advance()
                     state = 220
@@ -1658,9 +1616,6 @@ class Lexer:
                 elif ch == ",":
                     lexeme += self.advance()
                     state = 258
-                elif ch == "#":
-                    lexeme += self.advance()
-                    state = 260
                 else:
                     raise LexerError(
                         f"Unexpected symbol character {repr(ch)}", self.line, start_col
@@ -1722,7 +1677,7 @@ class Lexer:
 
             # '~' (206 -> 207*)
             elif state == 206:
-                if ch in NUMBERS:
+                if ch in NEG_DEL:
                     state = 207
                     return Token("RS_NEGATIVE", lexeme, self.line, start_col)
                 raise LexerError(
@@ -2018,15 +1973,6 @@ class Lexer:
                     f"Invalid delimiter '{ch}' after ','", self.line, self.col
                 )
 
-            # '#' (260 -> 261*)
-            elif state == 260:
-                if ch in CONJURE_DEL:
-                    state = 261
-                    return Token("RS_HASH", lexeme, self.line, start_col)
-                raise LexerError(
-                    f"Invalid delimiter '{ch}' after '#'", self.line, self.col
-                )
-
     # ========== LITERALS SCANNER ==========
     def scan_number(self) -> Token:
         state = 0
@@ -2194,7 +2140,7 @@ class Lexer:
                     )
 
             elif state == 349:
-                if ch is None or (ch in NEWLINE and not STRINGS_MAY_SPAN_LINES):
+                if ch is None or ch in NEWLINE:
                     raise LexerError(
                         f"Unterminated inscription literal: {lexeme!r}",
                         start_line,
@@ -2206,7 +2152,7 @@ class Lexer:
                 elif ch == "\\":
                     lexeme += self.advance()
                     esc = self.current()
-                    if esc is None or (esc in NEWLINE and not STRINGS_MAY_SPAN_LINES):
+                    if esc is None or esc in NEWLINE:
                         raise LexerError(
                             f"Unterminated inscription literal: {lexeme!r}",
                             start_line,
