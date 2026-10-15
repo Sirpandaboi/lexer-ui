@@ -288,7 +288,7 @@ class Lexer:
                     state = 254
                 else:
                     raise LexerError(
-                        f"Unexpected character {repr(ch)}", self.line, start_col
+                        f"Unexpected character '{ch}'", self.line, start_col
                     )
 
             # AETHER (2-7), AURA (8-11)
@@ -1611,7 +1611,7 @@ class Lexer:
                     state = 252
                 else:
                     raise LexerError(
-                        f"Unexpected symbol character {repr(ch)}", self.line, start_col
+                        f"Unexpected symbol character '{ch}'", self.line, start_col
                     )
 
             
@@ -1990,7 +1990,7 @@ class Lexer:
                     state = 290
                 else:
                     raise LexerError(
-                        f"Unexpected character {repr(ch)} in number",
+                        f"Unexpected character '{ch}' in number",
                         self.line,
                         start_col,
                     )
@@ -2128,7 +2128,7 @@ class Lexer:
                     state = 347
                 else:
                     raise LexerError(
-                        f"Unexpected character {repr(ch)} (expected '\"')",
+                        f"Unexpected character '{ch}' (expected '\"')",
                         self.line,
                         start_col,
                     )
@@ -2167,7 +2167,7 @@ class Lexer:
                 else:
                     self.errors.append(
                         LexerError(
-                            f"Invalid character {repr(ch)} in inscription literal",
+                            f"Invalid character '{ch}' in inscription literal",
                             self.line,
                             self.col,
                         )
@@ -2204,7 +2204,7 @@ class Lexer:
                     state = 350
                 else:
                     raise LexerError(
-                        f"Unexpected character {repr(ch)} (expected '#/')",
+                        f"Unexpected character '{ch}' (expected '#/')",
                         self.line,
                         start_col,
                     )
@@ -2232,7 +2232,7 @@ class Lexer:
                     # report it, but stay inside the comment so the rest isn't tokenized as code
                     self.errors.append(
                         LexerError(
-                            f"Invalid character {repr(ch)} in comment",
+                            f"Invalid character '{ch}' in comment",
                             self.line,
                             self.col,
                         )
