@@ -2136,7 +2136,7 @@ class Lexer:
             elif state == 347:
                 if ch is None or ch in NEWLINE:
                     raise LexerError(
-                        f"Unterminated inscription literal: {lexeme!r}",
+                        f"Unterminated inscription literal: {lexeme}",
                         start_line,
                         start_col,
                     )
@@ -2148,7 +2148,7 @@ class Lexer:
                     esc = self.current()
                     if esc is None or esc in NEWLINE:
                         raise LexerError(
-                            f"Unterminated inscription literal: {lexeme!r}",
+                            f"Unterminated inscription literal: {lexeme}",
                             start_line,
                             start_col,
                         )
@@ -2221,7 +2221,7 @@ class Lexer:
             elif state == 351:
                 if ch is None:
                     raise LexerError(
-                        f"Unterminated comment: {lexeme!r}", start_line, start_col
+                        f"Unterminated comment: {lexeme}", start_line, start_col
                     )
                 elif ch == "/":
                     lexeme += self.advance()
