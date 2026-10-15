@@ -2249,7 +2249,7 @@ class Lexer:
             elif state == 353:
                 if ch is None or ch in SPACE_DEL:
                     state = 354
-                    return Token("COMMENT", lexeme, start_line, start_col)
+                    return Token("comment", lexeme, start_line, start_col)
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after comment", self.line, self.col
                 )
@@ -2282,7 +2282,7 @@ class Lexer:
                 self.recover(err, start_pos)
                 continue
 
-            if token is not None and token.type != "COMMENT":
+            if token is not None:
                 self.tokens.append(token)
 
         return self.tokens

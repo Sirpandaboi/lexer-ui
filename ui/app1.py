@@ -154,7 +154,7 @@ def tokenize_endpoint():
     worker.start()
     worker.join(SCAN_TIMEOUT_SECONDS)
 
-    if worker.is_alive():                          # abandoned; report, don't hang
+    if worker.is_alive():                        # abandoned; report, don't hang
         return jsonify({
             "ok": False,
             "tokens": serialize(list(lexer.tokens)),
@@ -293,8 +293,8 @@ PAGE = r"""<!doctype html>
     gap: 16px;
     padding: 10px 16px;
     background: var(--nav);
-    border: 3px solid var(--ink-strong);
-    box-shadow: var(--shadow-strong);
+    border: 3px solid var(--ink); /* Uses --ink so it dynamically matches the purple border of other boxes in dark mode */
+    box-shadow: var(--shadow);
   }
 
   .brand { display: flex; align-items: center; gap: 10px; }
@@ -592,7 +592,7 @@ PAGE = r"""<!doctype html>
   var runBtn       = document.getElementById("runBtn");
   var themeToggleBtn = document.getElementById("themeToggleBtn");
 
-  var errorLines = {};   
+  var errorLines = {};  
   var currentTokens = [];
 
   // Midnight Dark Mode Toggle + LocalStorage persistence
@@ -610,13 +610,13 @@ PAGE = r"""<!doctype html>
 
   // Token Type Colors for Table Display
   var TYPE_COLORS = {
-    IDENTIFIER:      "#4F46E5",
-    id:              "#4F46E5",
-    aeth_lit:        "#2563EB",
-    ess_lit:         "#0284C7",
-    insc_lit:        "#D97706",
-    COMMENT:         "#8E7BC0",
-    EOF:             "#8E7BC0"
+    IDENTIFIER:     "#4F46E5",
+    id:             "#4F46E5",
+    aeth_lit:       "#2563EB",
+    ess_lit:        "#0284C7",
+    insc_lit:       "#D97706",
+    COMMENT:        "#8E7BC0",
+    EOF:            "#8E7BC0"
   };
 
   var KEYWORDS = new Set([
