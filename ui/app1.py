@@ -282,6 +282,7 @@ PAGE = r"""<!doctype html>
     flex-direction: column;
     gap: 16px;
     padding: 16px;
+    padding-right: 20px; /* leaves breathing room for right box shadow */
   }
 
   /* ---------------- navigation ---------------- */
@@ -293,7 +294,7 @@ PAGE = r"""<!doctype html>
     gap: 16px;
     padding: 10px 16px;
     background: var(--nav);
-    border: 3px solid var(--ink); /* Uses --ink so it dynamically matches the purple border of other boxes in dark mode */
+    border: 3px solid var(--ink);
     box-shadow: var(--shadow);
   }
 
@@ -350,7 +351,7 @@ PAGE = r"""<!doctype html>
     flex: 1;
     min-height: 0;
     display: grid;
-    grid-template-columns: 42% 58%;
+    grid-template-columns: 42% calc(58% - 16px); /* account for gap so right box doesn't overflow */
     gap: 16px;
   }
 
@@ -381,7 +382,7 @@ PAGE = r"""<!doctype html>
     color: var(--teal);
   }
 
-  .actions { display: flex; gap: 10px; margin-left: auto; }
+  .actions { display: flex; gap: 10px; margin-left: auto; flex-wrap: nowrap; }
 
   /* ---------------- buttons ---------------- */
   .btn {
@@ -396,6 +397,7 @@ PAGE = r"""<!doctype html>
     box-shadow: var(--shadow);
     cursor: pointer;
     transition: transform .05s ease, box-shadow .05s ease;
+    white-space: nowrap;
   }
   .btn:hover:not(:disabled) { filter: brightness(.95); }
   .btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
@@ -511,7 +513,7 @@ PAGE = r"""<!doctype html>
   .badge.error { background: var(--crimson); color: #fff; }
 
   @media (max-width: 900px) {
-    .app { height: auto; }
+    .app { height: auto; padding-right: 16px; }
     .workspace { grid-template-columns: 1fr; grid-template-rows: 420px 420px; }
     .nav { flex-wrap: wrap; }
     .tabs { margin-left: 0; }
@@ -538,6 +540,7 @@ PAGE = r"""<!doctype html>
     <section class="pane pane-editor">
       <div class="pane-header">
         <div class="actions">
+          <button id="clearBtn" class="btn" type="button">CLEAR</button>
           <button id="runBtn" class="btn primary" type="button">&#9654; RUN</button>
         </div>
       </div>
@@ -590,6 +593,7 @@ PAGE = r"""<!doctype html>
   var consoleEl    = document.getElementById("consoleEl");
   var statusBadge  = document.getElementById("statusBadge");
   var runBtn       = document.getElementById("runBtn");
+  var clearBtn     = document.getElementById("clearBtn");
   var themeToggleBtn = document.getElementById("themeToggleBtn");
 
   var errorLines = {};  
@@ -840,6 +844,15 @@ PAGE = r"""<!doctype html>
   });
 
   runBtn.addEventListener("click", analyze);
+
+  clearBtn.addEventListener("click", function() {
+    codeEl.value = "";
+    errorLines = {};
+    updateGutter();
+    renderTokens([]);
+    setStatus("IDLE", "idle");
+    clearConsole();
+  });
 
   /* ------------------------------- Boot --------------------------------- */
   codeEl.value = SAMPLE;
