@@ -63,7 +63,14 @@ CLOSE_PAREN_DEL = (
     | SPACE_DEL
 )
 OPEN_CURLY_DEL = (
-    LETTERS | NUMBERS | NEG_OP | HASHTAG | OPEN_CURLY | CLOSE_CURLY | OPEN_QUOTE | SPACE_DEL
+    LETTERS
+    | NUMBERS
+    | NEG_OP
+    | HASHTAG
+    | OPEN_CURLY
+    | CLOSE_CURLY
+    | OPEN_QUOTE
+    | SPACE_DEL
 )
 CLOSE_CURLY_DEL = LETTERS | TERMINATOR | COMMA | HASHTAG | CLOSE_CURLY | SPACE_DEL
 OPEN_BRACKET_DEL = LETTERS | NUMBERS | PAREN_DEL
@@ -86,7 +93,7 @@ CREMENT_DEL = (
     WHITESPACE | TERMINATOR | COMMA | CLOSE_PAREN | CLOSE_CURLY | CLOSE_BRACKET
 )
 REL_DEL = LETTERS | NUMBERS | WHITESPACE | NEG_OP | OPEN_PAREN
-EQUALITY_DEL = REL_DEL | OPEN_QUOTE
+EQUALITY_DEL = NOT_OP | REL_DEL | OPEN_QUOTE
 LOG_DEL = REL_DEL | NOT_OP
 NOT_DEL = LETTERS | PAREN_DEL
 NEG_DEL = NUMBERS | LETTERS | OPEN_PAREN
@@ -95,9 +102,16 @@ ASSIGN_DEL = LETTERS | NUMBERS | WHITESPACE | NEG_OP | OPEN_PAREN
 BASE_ASSIGN_DEL = NOT_OP | OPEN_CURLY | OPEN_QUOTE | ASSIGN_DEL
 
 # PUNCTUATION DELIMITERS
-TERMINATOR_DEL = HASHTAG | CLOSE_CURLY | SPACE_DEL
+TERMINATOR_DEL = LETTERS | NUMBERS | HASHTAG | CLOSE_CURLY | SPACE_DEL
 COMMA_DEL = (
-    LETTERS | NUMBERS | NEG_OP | HASHTAG |OPEN_PAREN | OPEN_CURLY | OPEN_QUOTE | SPACE_DEL
+    LETTERS
+    | NUMBERS
+    | NEG_OP
+    | HASHTAG
+    | OPEN_PAREN
+    | OPEN_CURLY
+    | OPEN_QUOTE
+    | SPACE_DEL
 )
 
 # IDENTIFIER & LITERAL DELIMITERS
@@ -141,7 +155,16 @@ ESSENCE_LIT_DEL = (
     | CLOSE_CURLY
     | SPACE_DEL
 )
-INSCRIPTION_LIT_DEL = TERMINATOR | COMMA | EQUAL_OP | NOT_OP | CLOSE_PAREN | OPEN_CURLY | CLOSE_CURLY | SPACE_DEL
+INSCRIPTION_LIT_DEL = (
+    TERMINATOR
+    | COMMA
+    | EQUAL_OP
+    | NOT_OP
+    | CLOSE_PAREN
+    | OPEN_CURLY
+    | CLOSE_CURLY
+    | SPACE_DEL
+)
 AURA_LIT_DEL = (
     TERMINATOR
     | COMMA
@@ -1614,8 +1637,6 @@ class Lexer:
                         f"Unexpected symbol character '{ch}'", self.line, start_col
                     )
 
-            
-
             # ')' (196 -> 197*)
             elif state == 188:
                 if ch is None or ch in CLOSE_PAREN_DEL:
@@ -1651,7 +1672,7 @@ class Lexer:
                 raise LexerError(
                     f"Invalid delimiter '{ch}' after '{{'", self.line, self.col
                 )
-            
+
             # '[' (202 -> 203*)
             elif state == 196:
                 if ch in OPEN_BRACKET_DEL:
@@ -1968,7 +1989,7 @@ class Lexer:
                     f"Invalid delimiter '{ch}' after ','", self.line, self.col
                 )
 
-# ========== LITERALS SCANNER ==========
+    # ========== LITERALS SCANNER ==========
     def scan_number(self) -> Token:
         state = 0
         start_col = self.col
